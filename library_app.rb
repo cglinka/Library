@@ -5,14 +5,18 @@ class Book
   attr_accessor :status, :description
   attr_reader :author, :title, :check_out_date, :due_date
 
-  #initialize variables 'author' and 'title' for each new book.
+  # initialize instance variables 'author' and 'title' for each new book.
+  #
+  # title - String
+  # author - String
+  #
   def initialize(title, author)
     @author = author
     @title = title
     @status = "available"
   end
 
-  #optionally add a description to a book that already exists.
+  # Optionally add a description to a book that already exists.
   def add_description(desc)
     @description = desc
   end
@@ -48,18 +52,26 @@ class Library
     end
   end
 
+  # List all books in library. Displays Title - Author : Status.
   def list_books
     @books.each { |book| puts "#{book.title} - #{book.author} : #{book.status}"}
   end
 
+  # List all books in the 'checked_out' array.
   def list_checked_out
     @checked_out.each { |book| puts "#{book.title} - #{book.author}" }
   end
 
+  # List all books in the 'overdue' array.
   def list_overdue
     @overdue.each { |book| puts "#{book.title} - #{book.author}" }
   end
 
+  # Method for checking out books
+  #
+  # book - Book object
+  # user - User object
+  #
   def check_out(book, user)
     if user.checked_out_books.length >= 2
       puts "You have too many books checked out. You must return at least one book before you can check out another book."      
@@ -74,15 +86,28 @@ class Library
     end
   end
 
+  # Method for checking books back in to the library
+  # 
+  # book - Book object
+  # user - User object
+  #
   def check_in(book, user)
+    # Check if book is already checked out
     if book.status == "checked out"
       book.status = "available"
+
+      # Remove from user's checked out book array
       user.checked_out_books.delete_if { |e| e == book }
+      
+      # Reset the check out and due dates to nothing
       book.check_out_date = nil
       book.due_date = nil
+      
+      # Remove from the libraries checked out and overdue arrays.
       @checked_out.delete_if { |e| e == book }
       @overdue.delete_if { |e| e == book }
     else
+      # Error message for book that is not checked out.
       puts "This book is not checked out"
     end
   end
