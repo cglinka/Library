@@ -44,8 +44,9 @@ class Library
     user.checked_out_books << book
   end
 
-  def check_in(book)
-    
+  def check_in(book, user)
+    book.status = "available"
+    user.checked_out_books.delete_if { |e| e == book }
   end
 
 end
