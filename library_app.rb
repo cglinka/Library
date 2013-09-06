@@ -27,6 +27,12 @@ class Library
 end
 
 class User
+  attr_accessor :@name, :@checked_out_books
+
+  def initialize
+    @name = name
+    @checked_out_books = []
+  end
 
 end
 
