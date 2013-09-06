@@ -26,10 +26,11 @@ class Library
 
 end
 
+#Create user who can check out books.
 class User
   attr_accessor :@name, :@checked_out_books
 
-  def initialize
+  def initialize(name)
     @name = name
     @checked_out_books = []
   end
