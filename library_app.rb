@@ -28,13 +28,18 @@ class Book
     puts "#{@title} by #{@author} is #{@status}."
   end
 
+  # Update the status of a book to overdue if it is past it's due date.
   def update_status
-    if ( (Time.now.yday - @due_date) > 0 )
+    if @due_date == nil
+      puts "#{@title} has not been checked out."
+    elsif ( (Time.now.yday - @due_date) > 0 )
       @status = "overdue"
       puts "#{@title} is overdue! Please return!"
+      return true
     else
       days_left = @due_date - Time.now.yday
       puts "You have #{days_left} days before you need to return #{@title}."
+      return false
     end    
   end
 
@@ -109,8 +114,8 @@ class Library
       puts "You have too many books checked out. You must return at least one book before you can check out another book."
 
     # Check if the user has overdue books
-    elsif overdue_check(book)
-      puts "You have overdue books!"
+    elsif book.update_status
+      puts "You have overdue books! No new books for you! Return your overdue books to be allowed to check out new books."
 
     # Check out the book
     elsif book.status == "available"
@@ -120,6 +125,7 @@ class Library
       book.due_date = book.check_out_date + 7
       @checked_out << book
       book.who_checked = user.name
+    
     else
       puts "You have discovered a problem with the check_out method! Sorry!"
     end
@@ -142,15 +148,20 @@ class Library
       book.check_out_date = nil
       book.due_date = nil
       
-      # Remove from the libraries checked out and overdue arrays.
+      # Remove from the library's checked out and overdue arrays.
       @checked_out.delete_if { |e| e == book }
       @overdue.delete_if { |e| e == book }
 
       # Remove the user who checked out the book
       book.who_checked = nil
-    else
+    elsif book.status == "available"
       # Error message for book that is not checked out.
       puts "This book is not checked out"
+    elsif book.status == "lost"
+      book.status  = "available"
+      puts "Thanks for bringing #{book.title} back!"
+    else
+      puts "There is something wrong with the book you've tried to check out. This is an error message. Sorry."
     end
   end
 
