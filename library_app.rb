@@ -1,6 +1,6 @@
 # Create a new book.
 class Book
-  attr_accessor :status, :description, :check_out_date, :due_date, :user
+  attr_accessor :status, :description, :check_out_date, :due_date, :who_checked
   attr_reader :author, :title
 
   # Initialize instance variables 'author' and 'title' for each new book.
@@ -12,20 +12,32 @@ class Book
     @author = author
     @title = title
     @status = "available"
-    @check_out_date = nil
-    @due_date = nil
-    @who = nil
+    @check_out_date
+    @due_date
+    @who_checked
   end
 
   # Optionally add a description to a book that already exists.
   def add_description(desc)
     @description = desc
+    puts "#{@title} now has a description of: '#{@description}'."
   end
 
   # Output the title, author, and status of each book.
   def get_info
     puts "#{@title} by #{@author} is #{@status}."
   end
+
+  def update_status
+    if ( (Time.now.yday - @due_date) > 0 )
+      @status = "overdue"
+      puts "#{@title} is overdue! Please return!"
+    else
+      days_left = @due_date - Time.now.yday
+      puts "You have #{days_left} days before you need to return #{@title}."
+    end    
+  end
+
 end # End of Book class
 
 
@@ -33,7 +45,7 @@ end # End of Book class
 #
 class Library
 
-  attr_reader :books
+  attr_reader :books, :checked_out, :overdue
 
   # Initialize the three arrays that hold information about books.
   def initialize
@@ -67,6 +79,25 @@ class Library
     @overdue.each { |book| puts "#{book.title} - #{book.author}" }
   end
 
+  # Check if a book is overdue
+  # def overdue_check(book)
+  #   today = Time.now.yday
+  #   if book.due_date == nil
+  #     puts "I think #{book.title} is not checked out!"
+  #     return false 
+  #   elsif ((today - book.due_date) > 7)
+  #     book.status = "overdue"
+  #     puts "#{book.title} is overdue! Please return it asap!"
+  #     return true
+  #   elsif book.status == "overdue"
+  #     return true
+  #     puts "This book is overdue!"
+  #   else
+  #     puts "#{book.title} is not overdue. Enjoy!"
+  #     return false
+  #   end 
+  # end
+
   # Method for checking out books
   #
   # book - Book object
@@ -77,6 +108,10 @@ class Library
     if user.checked_out_books.length >= 2
       puts "You have too many books checked out. You must return at least one book before you can check out another book."
 
+    # Check if the user has overdue books
+    elsif overdue_check(book)
+      puts "You have overdue books!"
+
     # Check out the book
     elsif book.status == "available"
       book.status = "checked out"
@@ -84,7 +119,7 @@ class Library
       book.check_out_date = Time.now.yday  # Note: does not work for multiple years / days at the turn of the new year. Needs better method for getting date.
       book.due_date = book.check_out_date + 7
       @checked_out << book
-#      book.who = user.name
+      book.who_checked = user.name
     else
       puts "You have discovered a problem with the check_out method! Sorry!"
     end
@@ -97,7 +132,7 @@ class Library
   #
   def check_in(book, user)
     # Check if book is already checked out
-    if book.status == "checked out"
+    if book.status == "checked out" || book.status == "overdue"
       book.status = "available"
 
       # Remove from user's checked out book array
@@ -112,7 +147,7 @@ class Library
       @overdue.delete_if { |e| e == book }
 
       # Remove the user who checked out the book
-      book.user = ""
+      book.who_checked = nil
     else
       # Error message for book that is not checked out.
       puts "This book is not checked out"
@@ -123,7 +158,8 @@ end # End of Library class
 
 #Create user who can check out books.
 class User
-  attr_reader :name, :checked_out_books
+  attr_accessor :name
+  attr_reader :checked_out_books
 
   def initialize(name)
     @name = name
