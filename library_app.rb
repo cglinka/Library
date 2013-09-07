@@ -1,11 +1,9 @@
-require 'date'
-
-#Create a new book.
+# Create a new book.
 class Book
-  attr_accessor :status, :description
-  attr_reader :author, :title, :check_out_date, :due_date
+  attr_accessor :status, :description, :check_out_date, :due_date, :user
+  attr_reader :author, :title
 
-  # initialize instance variables 'author' and 'title' for each new book.
+  # Initialize instance variables 'author' and 'title' for each new book.
   #
   # title - String
   # author - String
@@ -14,6 +12,9 @@ class Book
     @author = author
     @title = title
     @status = "available"
+    @check_out_date = nil
+    @due_date = nil
+    @who = nil
   end
 
   # Optionally add a description to a book that already exists.
@@ -21,16 +22,15 @@ class Book
     @description = desc
   end
 
-  #Output the title, author, and status of each book.
+  # Output the title, author, and status of each book.
   def get_info
     puts "#{@title} by #{@author} is #{@status}."
   end
-
-end
+end # End of Book class
 
 
 # Library Class holds books and methods for updating the status of books.
-
+#
 class Library
 
   attr_reader :books
@@ -73,16 +73,20 @@ class Library
   # user - User object
   #
   def check_out(book, user)
+    # Check the number of books a user has checked out
     if user.checked_out_books.length >= 2
-      puts "You have too many books checked out. You must return at least one book before you can check out another book."      
-    #elsif user.checked_out_books.each {}
-    else 
-      book.status == "available"
+      puts "You have too many books checked out. You must return at least one book before you can check out another book."
+
+    # Check out the book
+    elsif book.status == "available"
       book.status = "checked out"
       user.checked_out_books << book
-      book.check_out_date = DateTime.now
+      book.check_out_date = Time.now.yday  # Note: does not work for multiple years / days at the turn of the new year. Needs better method for getting date.
       book.due_date = book.check_out_date + 7
       @checked_out << book
+#      book.who = user.name
+    else
+      puts "You have discovered a problem with the check_out method! Sorry!"
     end
   end
 
@@ -106,13 +110,16 @@ class Library
       # Remove from the libraries checked out and overdue arrays.
       @checked_out.delete_if { |e| e == book }
       @overdue.delete_if { |e| e == book }
+
+      # Remove the user who checked out the book
+      book.user = ""
     else
       # Error message for book that is not checked out.
       puts "This book is not checked out"
     end
   end
 
-end
+end # End of Library class
 
 #Create user who can check out books.
 class User
@@ -121,7 +128,8 @@ class User
   def initialize(name)
     @name = name
     @checked_out_books = []
+    @overdue_books = []
   end
 
-end
+end # End of User class
 
