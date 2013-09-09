@@ -29,16 +29,19 @@ class Book
   end
 
   # Update the status of a book to overdue if it is past it's due date.
-  def update_status
-    if @due_date == nil
-      puts "#{@title} has not been checked out."
-    elsif ( (Time.now.yday - @due_date) > 0 )
-      @status = "overdue"
-      puts "#{@title} is overdue! Please return!"
-      return true
+  def is_overdue
+    if @due_date
+      if ( (Time.now.yday - @due_date) > 0 )
+        @status = "overdue"
+        puts "#{@title} is overdue! Please return!"
+        return true
+      else
+        days_left = @due_date - Time.now.yday
+        puts "You have #{days_left} days before you need to return #{@title}."
+        return false
+      end
     else
-      days_left = @due_date - Time.now.yday
-      puts "You have #{days_left} days before you need to return #{@title}."
+      puts "#{@title} has not been checked out."
       return false
     end    
   end
@@ -84,37 +87,20 @@ class Library
     @overdue.each { |book| puts "#{book.title} - #{book.author}" }
   end
 
-  # Check if a book is overdue
-  # def overdue_check(book)
-  #   today = Time.now.yday
-  #   if book.due_date == nil
-  #     puts "I think #{book.title} is not checked out!"
-  #     return false 
-  #   elsif ((today - book.due_date) > 7)
-  #     book.status = "overdue"
-  #     puts "#{book.title} is overdue! Please return it asap!"
-  #     return true
-  #   elsif book.status == "overdue"
-  #     return true
-  #     puts "This book is overdue!"
-  #   else
-  #     puts "#{book.title} is not overdue. Enjoy!"
-  #     return false
-  #   end 
-  # end
-
   # Method for checking out books
   #
   # book - Book object
   # user - User object
   #
   def check_out(book, user)
+    user.overdue_update
+
     # Check the number of books a user has checked out
     if user.checked_out_books.length >= 2
       puts "You have too many books checked out. You must return at least one book before you can check out another book."
 
     # Check if the user has overdue books
-    elsif book.update_status
+    elsif user.overdue_books.length > 0
       puts "You have overdue books! No new books for you! Return your overdue books to be allowed to check out new books."
 
     # Check out the book
@@ -125,6 +111,7 @@ class Library
       book.due_date = book.check_out_date + 7
       @checked_out << book
       book.who_checked = user.name
+      puts "#{book.title} has been checked out by #{book.who_checked}. Enjoy!"
     
     else
       puts "You have discovered a problem with the check_out method! Sorry!"
@@ -154,12 +141,17 @@ class Library
 
       # Remove the user who checked out the book
       book.who_checked = nil
+    
+    # Error message for book that is not checked out.
     elsif book.status == "available"
-      # Error message for book that is not checked out.
       puts "This book is not checked out"
+    
+    # Allows lost books to be returned.
     elsif book.status == "lost"
       book.status  = "available"
       puts "Thanks for bringing #{book.title} back!"
+    
+    # Malformed input or malfunctioning method error message.
     else
       puts "There is something wrong with the book you've tried to check out. This is an error message. Sorry."
     end
@@ -176,6 +168,14 @@ class User
     @name = name
     @checked_out_books = []
     @overdue_books = []
+  end
+
+  def overdue_update
+    @checked_out_books.each do |book|
+      if book.is_overdue
+        @overdue_books << book
+      end
+    end
   end
 
 end # End of User class
