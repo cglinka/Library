@@ -180,3 +180,37 @@ class User
 
 end # End of User class
 
+# TESTING
+
+load 'library_app.rb'
+
+#create a new library
+my_library = Library.new()
+
+#create a new user
+user1 = User.new("Clare")
+
+#create new books
+book1 = Book.new("Sabriel", "Garth Nix")
+book2 = Book.new("Jurassic Park", "That Guy")
+book3 = Book.new("Anne of Green Gables", "L M Montgomery")
+
+#add books to library
+my_library.add_book(book1)
+my_library.add_book(book2)
+my_library.add_book(book3)
+
+#check out books from library
+my_library.check_out(book1, user1)
+my_library.check_out(book2, user1)
+my_library.check_out(book3, user1)
+
+#check books into library
+my_library.check_in(book1, user1)
+my_library.check_in(book2, user1)
+
+#check status of book
+book1.status
+
+
+
